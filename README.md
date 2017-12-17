@@ -1,2 +1,2 @@
 # TermOS
-Modern terminal UI taht can launch apps !
+Modern terminal UI that can launch apps with full web capabilities!
