@@ -1,0 +1,2 @@
+#!/home/dig/bin/shtml
+<iframe style="border:none" srcdoc="$1"></iframe>

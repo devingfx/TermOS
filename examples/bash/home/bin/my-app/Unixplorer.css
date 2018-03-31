@@ -1,0 +1,67 @@
+body {
+	padding: 0;
+	margin: 0;
+}
+* {
+	box-sizing: border-box;
+}
+Explorer {
+	overflow: hidden;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	line-height: 30px;
+	bottom: 0;
+	background: #80BD01;
+	color: #fff;
+	font-size: 18px;
+	text-shadow: 0 1px 0 #000;
+	font-family: sans-serif;
+  	box-sizing: border-box;
+  	-webkit-user-select: none;
+}
+	header {
+		position: absolute;
+		top: 0;
+		width: 100%;
+		border-bottom: 1px solid rgba(255,255,255,0.3);
+		z-index: 1000;
+		-webkit-app-region: drag;
+	}
+	Directory span {
+  		font-weight: bold;
+		padding: 0.3em;
+		-webkit-app-region: no-drag;
+	}
+		Directory span:hover {
+			color: #3E5B00;
+			cursor: pointer;
+		}
+	FileList {
+		position: absolute;
+		width: 100%;
+		padding: 10px;
+		top: 31px;
+		overflow: auto;
+		bottom: 0;
+	}
+		FileList File {
+			display: block;
+			position: relative;
+			height: 40px;
+		}
+			FileList File:hover {
+				background: rgba(0,0,0,0.2);
+			}
+			FileList File name,
+			FileList File size,
+			FileList File mode {
+				padding: 5px;
+				position: absolute;
+			}
+			FileList File size {
+				right: 150px
+			}
+			FileList File mode {
+				right: 10px;
+			}

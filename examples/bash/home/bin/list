@@ -1,0 +1,9 @@
+#!/bin/bash
+BASEDIR=$0-app
+termkit append '<button>aze</button>'
+# termkit append "<div style=\"border:2px dashed red\">$($BASEDIR/ls-Al.awk)</div>";
+# termkit append "$(shtml "$(./ls-Al.awk)")"
+
+for (( c=1; c<=$(ls -A|wc -w)+2; c++)) ; do echo "" ; done
+
+

@@ -1,0 +1,116 @@
+echo 'Installing HTerML Components'
+#echo -e '\e]100;<style>footer{position:absolute;bottom:0;height:30px;background:grey}</style>\a'
+#echo -e '\e]100;<footer>;footer\a'
+
+#node ~/Downloads/dev/node/nodeOS/components/statusbar.js 
+#PS1='\[\e]101;updateStatusBar({hostname:"\h",user:"\u",cwd:"\w",cmdId:"\!"})\a\]';
+
+#PS1='\[\e]101;window.Explorer&&Explorer.updateCWD({cwd:"\w"})\a\]'$PS1;
+#PS1="\[\e]101;window.Explorer&&Explorer.updateCWD({cwd:\"\w\"})\a\]\[\e]0;(precise)\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\u@\h:\w\$ "
+
+
+
+
+function HTerML.OSC()
+{
+	#for var in "$@"
+        #do
+        #    echo "$var"
+        #done
+        printf "\e]%d;%s\a" $1 $(echo "$2" | base64 -w0)
+}
+
+function HTerML.extend()
+{
+#	echo "\e]99;$1;"$(echo "$(</dev/stdin)""$2" | base64 -w0)"\a"
+	printf "\e]99;%d;%s\a" $1 $(echo "$2" | base64 -w0)
+}
+
+HTerML.extend 101 "$(cat ~/.hterml/javascript.101.js)"
+HTerML.extend 100 "$(cat ~/.hterml/html.100.js)"
+HTerML.extend 200 "$(cat ~/.hterml/load.200.js)"
+HTerML.extend 300 "$(cat ~/.hterml/terminal.300.js)"
+
+HTerML.load()
+{
+#	HTerML.OSC 200 $(readlink -f "$1")";"$(file -b --mime-type "$1")";"$(base64 -w0 "$1")
+#	echo "\e]200;"$(readlink -f "$1")";"$(file -b --mime-type "$1")";"$(base64 -w0 "$1")"\a"
+	echo -e "\e]200;"$(readlink -f "$1")";"$(file -b --mime-type "$1")";"$(base64 -w0 "$1")"\a"
+}
+
+function HTerML.DOM()
+{
+	HTerML.js ""
+#HTerML.OSC 100 "$1"
+}
+
+function HTerML.js()
+{
+	HTerML.OSC 101 "$1"
+}
+
+function HTerML.append()
+{
+        HTerML.OSC 300 "$1"
+}
+
+# Augment OSC length to 100Mb transfer files
+HTerML.js "terminal.vt.maxStringSequence = 100 * 1024 * 1024"
+
+#function js()
+#{
+        #echo -e "\e]101;$1\a"
+        #read stdin;
+#	echo "$(</dev/stdin)""$1"
+#        echo "$(</dev/stdin)""$1" | base64 -w0
+#	echo ""
+#	echo "\e]101;"$(echo "$(</dev/stdin)""$1" | base64 -w0)"\a"
+#     echo -e "\e]101;"$(echo "$(</dev/stdin)""$1" | base64 -w0)"\a"
+#}
+
+#function html()
+#{
+#        read stdin;
+#        echo "\e]100;"$(echo "$stdin" | sed -f ~/url_escape.sed)";"$(echo "$1" | sed -f ~/url_escape.sed)"\a"
+#	echo -e "\e]100;"$(echo "$stdin" | sed -f ~/url_escape.sed)";"$(echo "$1" | sed -f ~/url_escape.sed)"\a"
+#}
+
+function datauri()
+{
+	echo "data:"$(file -b --mime-type "$1")";base64,"$(base64 -w0 "$1")
+}
+
+function img()
+{
+	read stdin
+	echo "<img id='$1' style='$2' src=\"$stdin\">"
+}
+
+function create-img-gallery()
+{
+	echo '<Gallery></Gallery>' | html document.body
+	echo '<style>Gallery{position:absolute;width:100%;background:rgba(255,255,255,0.5)}Gallery img{float:left;padding:5px;}</style>' | html document.body
+}
+function view-img()
+{
+	echo "if( !document.querySelector('Gallery') ) term_.io.sendString('create-img-gallery\\\\n')" | js;
+	datauri $1 | img | html "document.querySelector('Gallery')"
+}
+
+thumb()
+{
+    HTerML.append "$(datauri $1 | img "" "height:4em")";
+    printf "\n\n\n\n";
+}
+
+
+function far-far-away()
+{
+    HTerML.js "var body=document.body;body.style.perspective='1200px';body.style.background='black';var styleTerm=terminal.div_.style;styleTerm.transition='all .7s ease';styleTerm.transform='translateZ(-200px) translateY(50px) rotateX(30deg)';"
+}
+
+
+HTerML.js "(function(st){ st.backgroundColor = 'transparent'; st.backgroundImage = 'url(http://www.nic.ovh/fr/images/nicOvhLogo.png), radial-gradient(at 50% -60px, #4B4D52 0%, #1C202A 100%)'; st.backgroundSize = '10%, 100%'; st.backgroundRepeat = 'no-repeat'; st.backgroundPosition = '97% 97%, 0'; st.backgroundBlendMode = 'soft-light'; st.textShadow = '0 2px 2px #000'; })( document.body.firstElementChild.style )";
+
+
+

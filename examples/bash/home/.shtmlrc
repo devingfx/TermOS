@@ -1,0 +1,42 @@
+shtml()
+{
+    eval "echo \"$(perl -p -e 's/"/\\"/g' $1)\"";
+}
+
+datauri()
+{
+    OPTIND=1
+    while getopts "t:" opt; do
+        case $opt in
+            t)
+                local mime=$OPTARG
+            ;;
+            \?)
+                echo "Invalid option: -$OPTARG" >&2
+            ;;
+            :)
+                echo "Option -$OPTARG requires an argument." >&2
+            ;;
+        esac
+    done
+    shift $(($OPTIND - 1))
+    
+    if [ -z "$mime" ]
+    then
+        local mime="$(file -b --mime-type "$1")"
+    fi
+    echo "data:$mime;base64,"$(base64 -w0 "$1")
+}
+
+img()
+{
+        read stdin
+        echo "<img id='$1' style='$2' src=\"$stdin\">"
+}
+
+script()
+{
+        read stdin
+        #echo "<script id='$1'>$stdin</script>"
+        printf "<script id=\"$1\" src=\"$stdin\"></script>"
+}

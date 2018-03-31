@@ -1,0 +1,148 @@
+#!/bin/bash
+
+# Encodes a string into base64
+# Usage: b64 "string;with[potential{dangerous;characters\!\!}]"
+b64()
+{
+	printf "$(printf "$1" | base64 -w0)"
+}
+
+# Prints an OSC escape sequence
+# Usage: OSC number arguments...
+#	 OSC 100 body '<div class="foo">bar</div>'
+OSC()
+{
+        #for var in "$@"
+        #do
+        #    echo "$var"
+        #done
+#        printf "\e]%d;%s\a" $1 $(echo "$2" | base64 -w0)
+#	echo "\e]%d;$2\a" $1 ${@:3}
+	printf "\e]%d;$2\a" $1 ${@:3}
+}
+
+# Extends this termkit window with a js function to associate to an OSC.
+# Usage: extend num 
+extend()
+{
+#       echo "\e]99;$1;"$(echo "$(</dev/stdin)""$2" | base64 -w0)"\a"
+#        printf "\e]99;%d;%s\a" $1 $(echo "$2" | base64 -w0)
+	OSC 99 "%d;%s" $1 "$(b64 "$2")"
+}
+
+install()
+{
+	extend 101 "$(cat ~/.hterml/javascript.101.js)"
+	extend 100 "$(cat ~/.hterml/html.100.js)"
+	extend 200 "$(cat ~/.hterml/load.200.js)"
+	extend 300 "$(cat ~/.hterml/terminal.300.js)"
+	
+	# Augment OSC length to 100Mb to transfer file.
+	js "term_.vt.maxStringSequence = 100 * 1024 * 1024"
+}
+
+import()
+{
+	js "var imp;document.head.appendChild((imp=document.createElement('link'),imp.rel='import',imp.href='ssh://$1',imp))"
+}
+
+load()
+{
+#       HTerML.OSC 200 $(readlink -f "$1")";"$(file -b --mime-type "$1")";"$(base64 -w0 "$1")
+#       echo "\e]200;"$(readlink -f "$1")";"$(file -b --mime-type "$1")";"$(base64 -w0 "$1")"\a"
+        echo -e "\e]200;"$(readlink -f "$1")";"$(file -b --mime-type "$1")";"$(base64 -w0 "$1")"\a"
+	#OSC 200 "%s;%s;%s" "$(readlink -f "$1")" "$(file -b --mime-type "$1")" "$(base64 -w0 "$1")"
+}
+
+DOM()
+{
+	js ""
+	#OSC 100 "$1"
+}
+
+js()
+{
+	OSC 101 "$(b64 "$1")"
+	#b64 "$1" | OSC 101
+}
+
+append()
+{
+	OSC 300 "$1"
+	#b64 "$1" | OSC 300
+}
+
+
+#function js()
+#{
+        #echo -e "\e]101;$1\a"
+        #read stdin;
+#       echo "$(</dev/stdin)""$1"
+#        echo "$(</dev/stdin)""$1" | base64 -w0
+#       echo ""
+#       echo "\e]101;"$(echo "$(</dev/stdin)""$1" | base64 -w0)"\a"
+#     echo -e "\e]101;"$(echo "$(</dev/stdin)""$1" | base64 -w0)"\a"
+#}
+
+#function html()
+#{
+#        read stdin;
+#        echo "\e]100;"$(echo "$stdin" | sed -f ~/url_escape.sed)";"$(echo "$1" | sed -f ~/url_escape.sed)"\a"
+#       echo -e "\e]100;"$(echo "$stdin" | sed -f ~/url_escape.sed)";"$(echo "$1" | sed -f ~/url_escape.sed)"\a"
+#}
+
+# <div>$(datauri 'icon.svg')</div>
+datauri()
+{
+        echo "data:"$(file -b --mime-type "$1")";base64,"$(base64 -w0 "$1")
+}
+
+img()
+{
+        read stdin
+        echo "<img id='$1' style='$2' src=\"$stdin\">"
+}
+
+create-img-gallery()
+{
+        echo '<Gallery></Gallery>' | html document.body
+        #echo '<Gallery></Gallery>' | append document.body
+        echo '<style>Gallery{position:absolute;width:100%;background:rgba(255,255,255,0.5)}Gallery img{float:left;padding:5px;}</style>' | html document.body
+}
+
+view-img()
+{
+	echo "if( !document.querySelector('Gallery') ) term_.io.sendString('create-img-gallery\\\\n')" | js;
+	datauri $1 | img | html "document.querySelector('Gallery')"
+}
+
+thumb()
+{
+	append "$(datauri $1 | img "" "height:5em")";
+	printf "\n\n\n\n";
+}
+
+
+far-far-away()
+{
+	js "var body=document.body;body.style.perspective='1200px';body.style.background='black';var styleTerm=body.children.terminal.style;styleTerm.transition='all .7s ease';styleTerm.transform='translateZ(-200px) translateY(50px) rotateX(30deg)';"
+}
+
+
+window()
+{
+	echo "app.openShellWindow().then( shell => shell.write('$@\\\\n') )"
+	js "app.openShellWindow().then( shell => shell.write('$@\\\\n') )"
+}
+
+editor()
+{
+	js "document.title = '$1 - EDITOR'" & vim $1
+}
+
+
+# Launch function corresponding to 1st argument
+# passing to it all arguments from 2nd:
+# $@ -> all arguments / ${@:1} -> arguments from 1st
+#echo "termkit.$1(${*:2})"
+$1 "${*:2}"
